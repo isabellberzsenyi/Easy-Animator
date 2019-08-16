@@ -1,0 +1,9 @@
+<svg width="1000" height="1000" version="1.1"
+xmlns="http://www.w3.org/2000/svg">
+<ellipse id="O" cx="0.0" cy="0.0" rx="5.0" ry="2.0" fill="rgb(0, 0, 255)" visibility="visible" >
+<animate attributeName="x" attributeType="xml" begin="0ms" dur="1000ms" fill="freeze" from="0.0" to="6.0" />
+<animate attributeName="y" attributeType="xml" begin="0ms" dur="1000ms" fill="freeze" from="0.0" to="7.0" />
+<animate attributeName="width" attributeType="xml" begin="0ms" dur="1000ms" fill="freeze" from="7.0" to="7.0" />
+<animate attributeName="height" attributeType="xml" begin="0ms" dur="1000ms" fill="freeze" from="9.0" to="9.0" />
+</ellipse>
+</svg>

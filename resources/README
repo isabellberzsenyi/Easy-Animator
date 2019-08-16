@@ -1,0 +1,103 @@
+HOW TO RUN:
+-in TEXT_FILE.txt -view ONE OF(edit, view, svg, text) -speed ONE OF(# > 0 or nothing if text)
+-out NAME_OF_OUT_FILE
+
+
+** NEW ADDITIONS:
+EditView: Have a VisualView be a field, and the shapes are drawn from that. Also have Controller be
+a field so that the model can be edited through the EditView. The EditView then has a
+new window popup with all the editing options:
+    -Start & Resume -> starts the animation
+    -Pause -> pauses the animation
+    -Restart -> starts the animation over
+    -ChangeSpeed -> Click the up and down button to increase or decrease speed
+    -loop -> takes in a boolean to enable or disable loop
+    -addShape or deleteShape -> declares or deletes shape of the given name and type
+    -addKeyframe or deleteKeyframe -> declares or deletes keyframe for the given name and time
+    -modifyKeyframe -> modifies to te given characteristics
+All of these are done by using ActionListenerImplemented classes, they listen to JButtons or
+retrieve text from JTextFields.
+
+NEW CHANGES:
+IModel: had to create method of keyFrames for the adding, deleting and modifying keyframe...
+        we decided to create keyframes from the pre-existing motions we already have. Also added a
+        deleteShape.
+IController: have controller has new methods that are just called on the IModel -> these aren't used
+        for any other views
+
+To represent an animation the interface IModel is used. The shapes that can be added to an IModel
+are in the interface IShape. The motions or actions that can be added to an IModel are in the
+interface IMotion.
+
+IModel: an IModel represents an animation model, this model is implemented in the ModelImpl class.
+    - an IShape can be added by calling a method addShape(String id, IShape shape)
+    If the id is unique then the String and IShape are put in the HashMap of shapes and a Pair with
+    an empty IMotion list and the IShape's id are added to the motions list.
+    - an IMotion can be added by calling addMotion(String id, IMotion i)
+    To add an IMotion it 1. must be after the IShape's start time 2. cannot overlap with any
+    pre-existing IMotion of this IShape 3. if it this IMotion's start time is equal to another's
+    endTime, or the end time is equal to another's start time then their colors, dimension and
+    positions must be equal.
+    If the IMotion is valid to add, then it is added and the list is sorted through the private
+    methods sort, using the static class SortByTick that sorts two IMotions by their start times.
+    - a String representing the IModel can be returned by calling textDescription. A String
+    containing each shape, their id and what type. Then each of their list of motions are printed.
+    - to test/ to get the fields there are getters for each shape and a getMotionList(String id)
+    that returns the list of IMotions for the IShape
+    - *WE ADDED SETTERS* to adapt the IModel for the Builder class, so that the bounds can be set
+    **OUR MODIFICATIONS: we modified the IShapes class so that there is no end time, this allowed
+    our implementation work with the shapes and motions added on the given files
+        - added a getShapesAtTick(int tick) that returns the shapes at that given tick, the tweening
+        was calculated and then the new values are set with setters. This was added to properly show
+        the visual animation.
+        Also we have IModel extending IViewModel that allows the IView to get information from the
+        IModel without allowing it to modify the IModel.
+
+IShape: a representation of a Shape, this interface is implemented in the ShapeImpl class.
+    - printType can be called to print the enumerated Shape type of this IShape.
+    - getters are available with getColor, getDimension and getLocation, getStartTime, getEndTime
+    - setters are available to set the Color, Dimension and Location... this is used in getShapesAt-
+    Tick in ModelImpl
+    **OUR MODIFICATIONS: we removed a start and end time of the Shape, this initial field proved to
+    cause many issues when we created the Builder class and IView. IShape extends IReadOnlyShape,
+    allowing the IView to get all of a Shapes information.
+
+IMotion: a representation of an action for an IShape. This interface is implemented by MotionImpl.
+MotionImpl has a start and end time, then a Point2D for location, Dimension for boundary box, Color
+for both start and end times. Restrictions for the constructor are that the times must be positive
+and the end time must be greater than the start time.
+    - printMotion is used to print the location, color and dimension for start and end time, used
+    for textDescription
+    - getters for getStartTime and getEndTime are available
+    - to get the color, dimension and location at a certain tick time is available through
+    getTickStatus(int time), the time must be within start and end time of the IMotion.
+        - similarly there is a getColor, getDim and getLocation that return the color, dim and
+        location at given time, as long as the dim is valid
+
+**We initially had a Color class that we removed and decided to use the Colors class Java already
+has.
+
+Dimension class was created to override the java Dimension class. The difference is that the width
+and height values are doubles and neither field can be negative. With this the equals and hashCode
+were overridden as well.
+
+Enumerated class called Shape was created to keep track and limit Shape types.
+
+IController: created to keep track of a timer for the visual and also to hold both the IView and the
+IModel. Controller implements it and only has a go method that takes in a string for which type of
+view is being used, and based on the type it either starts the timer or renders the txt/svg file.
+
+IViewModel: created to allow IView to view information about the IModel.
+
+IView: is created to view the IModel, implemented by TextView, VisualView and SvgView. There are two
+methods:
+    - getSpeed() returns the speed of the IView, if it is a TextView, speed is 1.
+    - render that renders the View in the proper format
+        - TextView: a text file is created in the given output file, or System.out
+        - SvgView: a text file is created in the given output file, or System.out
+        - VisualView: shapes are drawn at each tick and repainted at the proper speed
+    Helper methods are added as needed, seen in the svg view there is a helper method to create an
+    svg file and then return various shapes.
+
+IDrawingPanel: created to draw a given list of IReadOnlyShapes, used in the VisualView interface.
+
